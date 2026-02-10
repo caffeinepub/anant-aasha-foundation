@@ -11,8 +11,11 @@ import type {
   LogicExplanation,
   Language,
   ApprovalStatus,
-  ChapterType
+  ChapterType,
+  School,
+  Student
 } from '../backend';
+import { Principal } from '@dfinity/principal';
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
@@ -284,5 +287,41 @@ export function useGetVisualNotebookChaptersByExtractedId(extractionId: bigint |
       return actor.getVisualNotebookChaptersByExtractedId(extractionId);
     },
     enabled: !!actor && !actorFetching && extractionId !== null,
+  });
+}
+
+export function useGetSchoolByExactName(schoolName: string | null) {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<School | null>({
+    queryKey: ['school', 'exactName', schoolName],
+    queryFn: async () => {
+      if (!actor || !schoolName || schoolName.trim() === '') return null;
+      return actor.getSchoolByExactName(schoolName);
+    },
+    enabled: !!actor && !actorFetching && !!schoolName && schoolName.trim() !== '',
+  });
+}
+
+export function useRegisterStudentWithSchoolName() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      student: Student;
+      studentPrincipal: Principal;
+      schoolName: string;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.registerStudentWithSchoolName(
+        params.student,
+        params.studentPrincipal,
+        params.schoolName
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
   });
 }

@@ -1,54 +1,46 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T17:33:56.679Z",
-  "summary": "Diff adds a new map `exactSchoolNameRegistry` in `backend/main.mo`, but the provided snippet does not show a `School` record type containing `schoolId : Nat` nor any exact-name lookup/update usage. The diff also modifies a frontend file that the BuildRequest explicitly marked as immutable, and adds an unrelated `project_state.json` file.",
+  "generatedAt": "2026-02-10T18:52:12.537Z",
+  "summary": "The diff summary does not provide evidence that the requested Motoko refactor (school resolve-or-create helper, manager-assignment logic refactor, and call-site cleanup) was implemented. The only visible changes are in truncated portions of backend/main.mo (no relevant helper/call-site changes shown) and an update to project_state.json content that was not requested by the BuildRequest.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Map keyed by school name (Text) whose value is a School record containing at least a schoolId (Nat).",
-      "reason": "Although `exactSchoolNameRegistry` is introduced as `Map<Text, School>`, the diff snippet does not show the definition of `type School` nor evidence that it contains `schoolId : Nat` (the only visible related type is `SchoolInfo`).",
+      "id": "REQ-8",
+      "requirement": "Refactor the internal Motoko implementation of the existing private school helper(s) so resolve-or-create-by-exact-school-name behavior remains identical, but the code is simplified/deduplicated while preserving exact Text equality and auth semantics.",
+      "reason": "The provided truncated backend/main.mo excerpt does not show any resolve-or-create school helper implementation or its refactor; no evidence of deduplication/simplification, exactSchoolNameRegistry lookup behavior, or unchanged authorization checks is present in the diff summary.",
       "evidence": [
-        "backend/main.mo"
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "id": "REQ-1",
-      "requirement": "Lookup behavior is based on exact Text equality only (no trimming, case folding, fuzzy matching, or partial matches).",
-      "reason": "The diff snippet shows the map declaration but no functions or call sites performing lookup; therefore there is no evidence that lookups are implemented and rely strictly on exact `Text` equality.",
+      "id": "REQ-9",
+      "requirement": "Refactor manager-assignment logic used by school auto-creation without changing behavior, preserving persisted effects and trapping on invalid school IDs.",
+      "reason": "No manager-assignment logic or school auto-creation path is shown in the truncated diff; there is no evidence of a refactor or of preserved trapping behavior for invalid school IDs.",
       "evidence": [
-        "backend/main.mo"
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "id": "REQ-1",
-      "requirement": "Code compiles and existing school- and class-related functionality continues to compile without requiring any frontend changes.",
-      "reason": "A frontend file that is explicitly forbidden to change was modified, which conflicts with the 'no frontend changes' constraint and could break the acceptance criterion.",
+      "id": "REQ-10",
+      "requirement": "Clean up backend entry points that accept a school name (Text) to consistently call the shared resolve-or-create helper and remove duplicated logic while keeping behavior identical.",
+      "reason": "No backend entry points (methods) that accept a school name are visible in the truncated excerpt, and there is no evidence of call-site changes to delegate to a shared helper or removal of duplicated resolve/create/auth logic.",
       "evidence": [
-        "frontend/src/hooks/useInternetIdentity.ts"
+        "backend/main.mo (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Modified `frontend/src/hooks/useInternetIdentity.ts` despite the constraint to not modify this immutable frontend path.",
-      "reason": "BuildRequest explicitly forbids changes to `frontend/src/hooks/useInternetIdentity.ts` (and related immutable paths), but the diff shows it was modified.",
+      "description": "Updated project_state.json summary/existing feature metadata describing platform behavior (including school-name resolution details).",
+      "reason": "The BuildRequest is for backend-only refactoring of Motoko helper(s) and call sites; it does not request modifications to project_state.json or project documentation/metadata.",
       "evidence": [
-        "frontend/src/hooks/useInternetIdentity.ts"
-      ]
-    },
-    {
-      "description": "Added `project_state.json` containing unrelated roadmap/feature-request metadata (AR-1..AR-6).",
-      "reason": "BuildRequest does not request adding project state/roadmap files; it only asks for a backend data structure addition in `backend/main.mo`.",
-      "evidence": [
-        "project_state.json"
+        "project_state.json (truncated)"
       ]
     }
   ],
-  "confidence": 0.68,
+  "confidence": 0.64,
   "changed_files": [
     "backend/main.mo",
-    "frontend/src/hooks/useInternetIdentity.ts",
     "project_state.json"
   ]
 }

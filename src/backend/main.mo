@@ -1,15 +1,16 @@
-import Nat "mo:core/Nat";
 import Map "mo:core/Map";
+import Nat "mo:core/Nat";
+import Text "mo:core/Text";
+import List "mo:core/List";
+import Runtime "mo:core/Runtime";
+import Iter "mo:core/Iter";
 import Time "mo:core/Time";
 import Int "mo:core/Int";
-import List "mo:core/List";
-import Text "mo:core/Text";
-import Runtime "mo:core/Runtime";
+
 import Principal "mo:core/Principal";
 import MixinStorage "blob-storage/Mixin";
 import AccessControl "authorization/access-control";
 import Storage "blob-storage/Storage";
-import Iter "mo:core/Iter";
 import MixinAuthorization "authorization/MixinAuthorization";
 
 actor {
@@ -216,9 +217,65 @@ actor {
     schools : [FloatingPointDashboard];
   };
 
-  type School = {
+  public type School = {
     schoolId : Nat;
     name : Text;
+  };
+
+  // PRIVATE helper function to generate a new unique School_ID
+  private func generateNewSchoolId() : Nat {
+    // Use timestamp as unique School_ID generator for simplicity.
+    let timestamp = Time.now();
+    timestamp.toNat();
+  };
+
+  // PRIVATE helper function to assign a teacher as the manager of a school
+  private func assignManagerToSchoolInternal(user : Principal, schoolId : Nat) {
+    // Verify the school exists
+    switch (exactSchoolNameRegistry.values().find(func(s) { s.schoolId == schoolId })) {
+      case (?_) {};
+      case (null) { Runtime.trap("Cannot assign manager for non-existent school") };
+    };
+
+    // Update the user profile to designate them as the manager for the school
+    let updatedProfile : UserProfile = {
+      name = "Manager";
+      role = "manager";
+      schoolId = ?schoolId;
+      classId = null;
+      coinBalance = 0;
+    };
+
+    userProfiles.add(user, updatedProfile);
+  };
+
+  // PRIVATE exact school-name resolve-or-create helper: returns the exact School_ID if school exists or auto-creates new school with a new School_ID and returns it
+  private func resolveOrCreateSchoolIdInternal(caller : Principal, schoolName : Text) : async Nat {
+    if (not isTeacherOrAdmin(caller)) {
+      Runtime.trap("Unauthorized: Only teachers and admins can resolve/create schools");
+    };
+
+    // Check if the school already exists and return its School_ID
+    switch (exactSchoolNameRegistry.get(schoolName)) {
+      case (?school) { return school.schoolId };
+      case (null) {
+        // Auto-create new School if not found
+        let newSchoolId = generateNewSchoolId();
+        let newSchool : School = {
+          schoolId = newSchoolId;
+          name = schoolName;
+        };
+
+        // Add new school to registry
+        exactSchoolNameRegistry.add(schoolName, newSchool);
+
+        // Assign the caller as manager of the new school
+        assignManagerToSchoolInternal(caller, newSchoolId);
+
+        // Return the new School_ID
+        newSchoolId;
+      };
+    };
   };
 
   func isTeacherOrAdmin(caller : Principal) : Bool {
@@ -783,20 +840,19 @@ actor {
     };
   };
 
-  public shared ({ caller }) func registerStudent(student : Student, studentPrincipal : Principal) : async () {
+  public shared ({ caller }) func registerStudentWithSchoolName(student : Student, studentPrincipal : Principal, schoolName : Text) : async () {
     if (not isTeacherOrAdmin(caller)) {
       Runtime.trap("Unauthorized: Only teachers and admins can register students");
     };
 
-    if (not schoolExists(student.schoolId)) {
-      Runtime.trap("Invalid schoolId: School does not exist");
-    };
+    // Use exact school-name resolve-or-create behavior (now returns resolved/created School_ID)
+    let schoolId = await resolveOrCreateSchoolIdInternal(caller, schoolName);
 
     if (not classExists(student.classId)) {
       Runtime.trap("Invalid classId: Class does not exist");
     };
 
-    if (not hasAccessToSchool(caller, student.schoolId)) {
+    if (not hasAccessToSchool(caller, schoolId)) {
       Runtime.trap("Unauthorized: You don't have access to this school");
     };
 
@@ -809,13 +865,17 @@ actor {
         Runtime.trap("Invalid classId: Class not found");
       };
       case (?classInfo) {
-        if (classInfo.schoolId != student.schoolId) {
+        if (classInfo.schoolId != schoolId) {
           Runtime.trap("Class does not belong to the specified school");
         };
       };
     };
 
-    studentRegistry.add(studentPrincipal, student);
+    let finalStudent : Student = {
+      student with schoolId = schoolId;
+    };
+
+    studentRegistry.add(studentPrincipal, finalStudent);
   };
 
   public query ({ caller }) func getCumulativeAverage(year : Int, term : Int, classId : Nat) : async Nat {
@@ -1190,7 +1250,7 @@ actor {
     chaptersList.toArray();
   };
 
-  // Exact school name management/backed for frontend search-by-name
+  // Admin-only function to add school with exact name lookup
   public shared ({ caller }) func addSchoolWithExactNameLookup(schoolId : Nat, name : Text) : async () {
     if (not (AccessControl.isAdmin(accessControlState, caller))) {
       Runtime.trap("Unauthorized: Only admins can add schools");
@@ -1204,7 +1264,7 @@ actor {
     exactSchoolNameRegistry.add(name, school);
   };
 
-  // Fetch school by name (for autocomplete service)
+  // Fetch school by name for autocomplete service
   public query ({ caller }) func getSchoolByExactName(name : Text) : async ?School {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can view school information");

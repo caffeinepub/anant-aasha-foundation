@@ -1,6 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Task 1: Backend-only exact school-name index (no frontend changes)",
+  "title": "Frontend-only plan: no changes required for backend-only Motoko refactor",
   "requirements": []
 }

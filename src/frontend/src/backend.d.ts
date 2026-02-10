@@ -154,7 +154,7 @@ export interface backendInterface {
     getVisualNotebookChapters(): Promise<Array<VisualNotebookChapter>>;
     getVisualNotebookChaptersByExtractedId(extractionId: bigint): Promise<Array<VisualNotebookChapter>>;
     isCallerAdmin(): Promise<boolean>;
-    registerStudent(student: Student, studentPrincipal: Principal): Promise<void>;
+    registerStudentWithSchoolName(student: Student, studentPrincipal: Principal, schoolName: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveOCRExtraction(data: OCRExtraction): Promise<void>;
     saveQuestions(question: Question, questionId: bigint): Promise<void>;

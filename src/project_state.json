@@ -1,19 +1,31 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
-  "summary": "Building an NGO-focused LMS platform with multi-tenant school/class isolation, role-based dashboards (admin/teacher/student), teacher-led school + student registration with auto-resolve School/Class logic, and strict textbook-PDF ingestion rules that separate explanatory content from exercises for downstream learning vs assessment use.",
+  "projectStateVersion": 9,
+  "summary": "Building an NGO-focused LMS platform with multi-tenant school/class isolation, role-based dashboards (admin/teacher/student), teacher-led school + student registration with auto-resolve School/Class logic, and strict textbook-PDF ingestion rules that separate explanatory content from exercises for downstream learning vs assessment use. School-name resolution uses exact string match first; if no exact match exists, the backend auto-creates a new School record, returns the new School_ID, and auto-assigns the creating teacher as the school manager (applies to all backend flows that accept a school name).",
   "architectural_notes": [
     "Use exact string matching for school resolution (no fuzzy/normalization unless added later).",
     "Grades supported: UKG through 12th; no class sections (A/B/C) used.",
     "Data isolation requirement: logical per-school separation inside the same Internet Computer canister (e.g., nested maps keyed by School_ID).",
     "Teacher who creates a school is auto-assigned as manager for that school and its classes.",
-    "Recommended uniqueness constraints to prevent duplicates: Schools unique by (school_name, board, location); Classes unique by (school_id, class_level[, section if ever added])."
+    "Recommended uniqueness constraints to prevent duplicates: Schools unique by (school_name, board, location); Classes unique by (school_id, class_level[, section if ever added]).",
+    "Teacher-led student registration must resolve schools using exact Text equality on school name (no fuzzy/normalized matching); if no exact match exists, do not infer—require explicit school creation/selection.",
+    "School-name resolution policy updated: across all backend flows that accept a school name, use exact Text equality lookup; if no exact match exists, auto-create the school and return its new School_ID; auto-assign the creating teacher as the school manager (still no fuzzy/normalized/partial matching).",
+    "Resolve-or-create school helper: refactor for code quality only (no external behavior changes) and standardize all backend entry points to use the shared helper consistently."
   ],
   "known_issues": [
     "Build/app-builder repeatedly fails with generic 'AI unable to complete your request / struggled' errors when prompts bundle too many features; requires breaking work into smaller builder-safe tasks."
   ],
-  "isFixRequest": true,
-  "existing_features": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-update-the-student-registration-ui-flow-to-align-with-backend-auto-create-behavior-remove-adjust-the-current-frontend-error-messaging-that-instructs-users-to-create-the-school-first-when-no-exact-match-exists-and-ensure-the-registration-flow-can-proceed-when-the-school-name-is-new-while-still-using-exact-matching-semantics-for-determining-whether-it-is-an-existing-school-vs-a-new-school",
+      "title": "Update the student registration UI flow to align with backend auto-create behavior: remove/adjust the current frontend error messaging that instructs users to “create the school first” when no exact match exists, and ensure the registration flow can proceed when the school name is new (while still using exact matching semantics for determining whether it is an existing school vs a new school).",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    }
+  ],
   "new_feature_requests": [
     {
       "id": "AR-1",
@@ -50,6 +62,74 @@
       "summary": "In backend/main.mo, add a school storage data structure that supports exact string match lookup by school name: maintain a map keyed by school name (Text) whose value is a School record containing at minimum the School_ID (Nat). This structure must be independent of UI and must not rely on partial/normalized matching (only exact Text equality).",
       "reqIds": [
         "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Ensure the backend maintains and uses a dedicated exact school-name lookup map keyed by the school name (Text) with values containing at minimum the resolved School_ID (Nat), and keep this index consistent whenever schools are created/updated through existing backend school management functions.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Refine school-name validation across all backend flows: resolve School_ID by exact school-name match; if no exact match exists, automatically create a new School with a new School_ID, return it, and auto-assign the creating teacher as school manager (no fuzzy/normalized/partial matching).",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Implement exact school-name resolution as a shared backend helper: when a backend flow receives a school name (Text), it must (1) look up the School_ID using exact Text equality (no normalization/partial/fuzzy match), (2) if found, return the existing School_ID, (3) if not found, automatically create a new School with a new School_ID, register it in the school registries (including the exactSchoolNameRegistry index), and return the new School_ID.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Apply the exact school-name resolve-or-create behavior to all existing backend entry points (public/shared functions) that accept a school name (Text) as input, so they no longer fail solely due to a missing exact-name match and instead proceed using the resolved/created School_ID.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "When a new School is auto-created via school-name resolve-or-create, automatically assign the creating teacher as that school’s manager according to the project’s existing authorization/role model (and ensure the manager assignment is persisted and enforced consistently).",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Code-quality refactor: improve internal Motoko implementation of the existing resolve-or-create school helper (simplification/deduping/error-handling/role-assignment flow) without changing external behavior, and refactor backend entry points to call the helper consistently (call-site cleanup only, no behavioral changes).",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Refactor the internal Motoko implementation of the existing private school helper(s) so the resolve-or-create-by-exact-school-name behavior remains identical, but the code is simplified and deduplicated (including factoring repeated checks, reducing nested switches, and improving readability).",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Refactor manager-assignment logic used by school auto-creation to improve code quality without changing behavior, ensuring the same persisted effects on userProfiles and the same trapping behavior for invalid school IDs.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Clean up backend entry points that accept a school name (Text) to call the shared resolve-or-create helper consistently, removing duplicate resolve/create/authorization logic at call sites while keeping outcomes identical.",
+      "reqIds": [
+        "REQ-10"
       ],
       "status": "pending"
     }

@@ -180,7 +180,10 @@ export interface _SERVICE {
     Array<VisualNotebookChapter>
   >,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'registerStudent' : ActorMethod<[Student, Principal], undefined>,
+  'registerStudentWithSchoolName' : ActorMethod<
+    [Student, Principal, string],
+    undefined
+  >,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'saveOCRExtraction' : ActorMethod<[OCRExtraction], undefined>,
   'saveQuestions' : ActorMethod<[Question, bigint], undefined>,

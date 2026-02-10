@@ -1,18 +1,32 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T17:33:56.681Z",
+  "generatedAt": "2026-02-10T18:52:12.539Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
+    "total": 3,
     "implemented": 0,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "In backend/main.mo, add a school storage data structure that supports exact string match lookup by school name: maintain a map keyed by school name (Text) whose value is a School record containing at minimum the School_ID (Nat). This structure must be independent of UI and must not rely on partial/normalized matching (only exact Text equality).",
+        "id": "REQ-10",
+        "summary": "Clean up backend entry points that accept a school name (Text) to call the shared resolve-or-create helper consistently, removing duplicate resolve/create/authorization logic at call sites while keeping outcomes identical.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Refactor the internal Motoko implementation of the existing private school helper(s) so the resolve-or-create-by-exact-school-name behavior remains identical, but the code is simplified and deduplicated (including factoring repeated checks, reducing nested switches, and improving readability).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-9",
+        "summary": "Refactor manager-assignment logic used by school auto-creation to improve code quality without changing behavior, ensuring the same persisted effects on userProfiles and the same trapping behavior for invalid school IDs.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
@@ -22,21 +36,12 @@
   "changedFiles": [
     "backend/main.mo",
     "build-request.json",
-    "build-template/Dockerfile",
-    "build-template/LICENSE",
-    "build-template/README.md",
-    "build-template/deploy.sh",
-    "build-template/icp.yaml",
-    "build-template/src/backend/canister.yaml",
-    "build-template/src/frontend/canister.yaml",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useInternetIdentity.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

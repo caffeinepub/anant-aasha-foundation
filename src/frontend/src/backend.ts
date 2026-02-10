@@ -247,7 +247,7 @@ export interface backendInterface {
     getVisualNotebookChapters(): Promise<Array<VisualNotebookChapter>>;
     getVisualNotebookChaptersByExtractedId(extractionId: bigint): Promise<Array<VisualNotebookChapter>>;
     isCallerAdmin(): Promise<boolean>;
-    registerStudent(student: Student, studentPrincipal: Principal): Promise<void>;
+    registerStudentWithSchoolName(student: Student, studentPrincipal: Principal, schoolName: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveOCRExtraction(data: OCRExtraction): Promise<void>;
     saveQuestions(question: Question, questionId: bigint): Promise<void>;
@@ -693,17 +693,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async registerStudent(arg0: Student, arg1: Principal): Promise<void> {
+    async registerStudentWithSchoolName(arg0: Student, arg1: Principal, arg2: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.registerStudent(arg0, arg1);
+                const result = await this.actor.registerStudentWithSchoolName(arg0, arg1, arg2);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.registerStudent(arg0, arg1);
+            const result = await this.actor.registerStudentWithSchoolName(arg0, arg1, arg2);
             return result;
         }
     }

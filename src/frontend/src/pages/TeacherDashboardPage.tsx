@@ -8,8 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Upload, FileText, CheckCircle, AlertTriangle, Loader2, BookOpen, FileQuestion, Sparkles, Link2 } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertTriangle, Loader2, BookOpen, FileQuestion, Sparkles, Link2, UserPlus } from 'lucide-react';
 import { useGetCallerUserProfile, useSaveOCRExtraction, useGetOCRExtractionByClass, useSubmitVisualNotebookChapter } from '../hooks/useQueries';
+import { StudentRegistrationForm } from '../components/StudentRegistrationForm';
 import { toast } from 'sonner';
 import type { OCRExtraction, Flashcard, SlideDeck, Infographic, LogicExplanation } from '../backend';
 import { OCRDocumentType, Language, ApprovalStatus, ChapterType } from '../backend';
@@ -280,8 +281,13 @@ export function TeacherDashboardPage() {
   };
 
   const handleUpload = async () => {
-    if (!selectedFile || !formData.schoolId || !formData.classId || !formData.subjectId) {
-      toast.error('Please fill in all fields and select a file');
+    if (!selectedFile) {
+      toast.error('Please select a file first');
+      return;
+    }
+
+    if (!formData.schoolId || !formData.classId || !formData.subjectName) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -290,52 +296,40 @@ export function TeacherDashboardPage() {
 
     try {
       const extraction = await simulateOCRExtraction(selectedFile);
-      setExtractionResult(extraction);
-
       await saveOCRMutation.mutateAsync(extraction);
-
-      if (extraction._percentage_textbook >= 60) {
-        toast.success('Content extracted and validated successfully!');
-        
-        if (extraction.documentType === OCRDocumentType.textbook) {
-          await generateVisualNotebook(extraction);
-        }
-      } else {
-        toast.warning('Content extracted but flagged for review (below 60% textbook content)');
-      }
+      setExtractionResult(extraction);
+      toast.success('PDF uploaded and processed successfully!');
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to process document');
+      toast.error('Failed to upload and process PDF');
     } finally {
       setUploading(false);
-      setUploadProgress(0);
-    }
-  };
-
-  const getDocumentTypeLabel = (docType: OCRDocumentType): string => {
-    switch (docType) {
-      case OCRDocumentType.textbook:
-        return 'Textbook';
-      case OCRDocumentType.assignment:
-        return 'Assignment';
-      case OCRDocumentType.worksheet:
-        return 'Worksheet';
-      default:
-        return 'Unknown';
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Teacher Dashboard</h1>
-        <p className="text-gray-600">Upload textbooks and manage AI-generated bilingual Hinglish content</p>
+        <h1 className="text-3xl font-bold mb-2">Teacher Dashboard</h1>
+        <p className="text-muted-foreground">
+          Upload textbooks, generate Visual Notebooks, and manage student registrations
+        </p>
       </div>
 
       <Tabs defaultValue="upload" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="upload">Upload Content</TabsTrigger>
-          <TabsTrigger value="library">Content Library</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="upload">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Content
+          </TabsTrigger>
+          <TabsTrigger value="library">
+            <BookOpen className="h-4 w-4 mr-2" />
+            Content Library
+          </TabsTrigger>
+          <TabsTrigger value="students">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Register Students
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="upload" className="space-y-6">
@@ -346,28 +340,30 @@ export function TeacherDashboardPage() {
                 Upload Textbook PDF
               </CardTitle>
               <CardDescription>
-                Upload textbook PDFs for AI-powered OCR extraction and automatic Visual Notebook generation with bilingual Hinglish content
+                Upload textbook PDFs for OCR extraction and automatic Visual Notebook generation
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
+                  <Label htmlFor="schoolId">School ID</Label>
+                  <Input
+                    id="schoolId"
+                    type="number"
+                    value={formData.schoolId}
+                    onChange={(e) => setFormData({ ...formData, schoolId: e.target.value })}
+                    disabled={uploading}
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="schoolName">School Name</Label>
-                  <Select
+                  <Input
+                    id="schoolName"
                     value={formData.schoolName}
-                    onValueChange={(value) => {
-                      const schoolId = value === 'Public School' ? '1' : '2';
-                      setFormData({ ...formData, schoolName: value, schoolId });
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Public School">Public School (ID: 1)</SelectItem>
-                      <SelectItem value="Private Academy">Private Academy (ID: 2)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+                    disabled={uploading}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -375,40 +371,20 @@ export function TeacherDashboardPage() {
                   <Input
                     id="classId"
                     type="number"
-                    placeholder="Enter class ID (e.g., 5, 6, 7)"
                     value={formData.classId}
                     onChange={(e) => setFormData({ ...formData, classId: e.target.value })}
+                    disabled={uploading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="subjectId">Subject ID</Label>
+                  <Label htmlFor="subjectName">Subject</Label>
                   <Input
-                    id="subjectId"
-                    type="number"
-                    placeholder="Enter subject ID"
-                    value={formData.subjectId}
-                    onChange={(e) => setFormData({ ...formData, subjectId: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="subjectName">Subject Name</Label>
-                  <Select
+                    id="subjectName"
                     value={formData.subjectName}
-                    onValueChange={(value) => setFormData({ ...formData, subjectName: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Science">Science</SelectItem>
-                      <SelectItem value="Mathematics">Mathematics</SelectItem>
-                      <SelectItem value="Social Studies">Social Studies</SelectItem>
-                      <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Hindi">Hindi</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    onChange={(e) => setFormData({ ...formData, subjectName: e.target.value })}
+                    disabled={uploading}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -416,8 +392,9 @@ export function TeacherDashboardPage() {
                   <Select
                     value={formData.documentType}
                     onValueChange={(value) => setFormData({ ...formData, documentType: value as OCRDocumentType })}
+                    disabled={uploading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="documentType">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -430,210 +407,164 @@ export function TeacherDashboardPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="file">PDF File</Label>
-                <div className="flex items-center gap-4">
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileSelect}
-                    disabled={uploading}
-                    className="flex-1"
-                  />
-                  {selectedFile && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <FileText className="h-3 w-3" />
-                      {selectedFile.name}
-                    </Badge>
-                  )}
-                </div>
+                <Label htmlFor="file">Select PDF File</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileSelect}
+                  disabled={uploading}
+                />
               </div>
 
-              {uploading && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Processing document with OCR...</span>
-                    <span className="font-medium">{uploadProgress}%</span>
-                  </div>
-                  <Progress value={uploadProgress} className="h-2" />
-                </div>
-              )}
-
-              {generatingNotebook && (
-                <Alert className="bg-purple-50 border-purple-200">
-                  <Sparkles className="h-4 w-4 text-purple-600 animate-pulse" />
-                  <AlertDescription className="text-purple-900">
-                    Generating Visual Notebook with bilingual Hinglish content: flashcards, slides, infographics, and logic explanations...
+              {selectedFile && (
+                <Alert>
+                  <FileText className="h-4 w-4" />
+                  <AlertDescription>
+                    Selected: <strong>{selectedFile.name}</strong> ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                   </AlertDescription>
                 </Alert>
               )}
 
-              <Alert className="bg-blue-50 border-blue-200">
-                <BookOpen className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-900">
-                  <strong>Textbook Purity Rule:</strong> For subjects other than Hindi and English Literature,
-                  at least 60% of content must come from the textbook. Textbook uploads automatically generate
-                  Visual Notebooks with bilingual Hinglish content linked to OCR extraction IDs.
-                </AlertDescription>
-              </Alert>
-
-              <Alert className="bg-green-50 border-green-200">
-                <Link2 className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-900">
-                  <strong>Auto-Linking:</strong> When students from {formData.schoolName} Class {formData.classId} register,
-                  they will automatically be assigned this chapter's content and Guardian Game scenarios.
-                  Composite Key: {formData.schoolName.replace(/\s+/g, '_')}_Class_{formData.classId}_{formData.subjectName.replace(/\s+/g, '_')}
-                </AlertDescription>
-              </Alert>
+              {uploading && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Processing PDF...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <Progress value={uploadProgress} />
+                </div>
+              )}
 
               <Button
                 onClick={handleUpload}
-                disabled={!selectedFile || uploading || !formData.schoolId || !formData.classId || !formData.subjectId}
+                disabled={!selectedFile || uploading}
                 className="w-full"
-                size="lg"
               >
                 {uploading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Processing...
                   </>
                 ) : (
                   <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload & Generate Visual Notebook
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload & Extract
                   </>
                 )}
               </Button>
+            </CardContent>
+          </Card>
 
-              {extractionResult && (
-                <Card className={extractionResult._percentage_textbook >= 60 ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
+          {extractionResult && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  Extraction Complete
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Extraction ID</Label>
+                    <p className="font-mono text-sm">{extractionResult._id.toString()}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Textbook Purity</Label>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={extractionResult._percentage_textbook >= 60 ? 'default' : 'destructive'}>
+                        {extractionResult._percentage_textbook.toFixed(1)}%
+                      </Badge>
                       {extractionResult._percentage_textbook >= 60 ? (
-                        <>
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                          <span className="text-green-900">Extraction Complete & Validated</span>
-                        </>
+                        <span className="text-sm text-success">✓ Meets 60% requirement</span>
                       ) : (
-                        <>
-                          <AlertTriangle className="h-5 w-5 text-amber-600" />
-                          <span className="text-amber-900">Content Flagged for Review</span>
-                        </>
+                        <span className="text-sm text-destructive">✗ Below 60% threshold</span>
                       )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Textbook Content Fidelity</p>
-                        <p className="text-2xl font-bold">{extractionResult._percentage_textbook}%</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Alert>
+                  <Link2 className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Auto-linking:</strong> Students registered in {formData.schoolName} Class {formData.classId} will automatically see this content in their Visual Notebook.
+                  </AlertDescription>
+                </Alert>
+
+                <Button
+                  onClick={() => generateVisualNotebook(extractionResult)}
+                  disabled={generatingNotebook || extractionResult._percentage_textbook < 60}
+                  className="w-full"
+                >
+                  {generatingNotebook ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating Visual Notebook...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate Visual Notebook
+                    </>
+                  )}
+                </Button>
+
+                {extractionResult._percentage_textbook < 60 && (
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      Cannot generate Visual Notebook: Content purity is below 60% threshold. Please upload a textbook PDF.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="library" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Content Library</CardTitle>
+              <CardDescription>
+                View all uploaded content for Class {formData.classId}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {classExtractions && classExtractions.length > 0 ? (
+                <div className="space-y-2">
+                  {classExtractions.map((extraction) => (
+                    <div
+                      key={extraction._id.toString()}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{extraction.fileName}</p>
+                          <p className="text-sm text-muted-foreground">
+                            ID: {extraction._id.toString()} | Purity: {extraction._percentage_textbook.toFixed(1)}%
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Questions Extracted</p>
-                        <p className="text-2xl font-bold">
-                          {JSON.parse(extractionResult._extracted_Questions).length}
-                        </p>
-                      </div>
+                      <Badge variant={extraction._percentage_textbook >= 60 ? 'default' : 'destructive'}>
+                        {extraction.relevance}
+                      </Badge>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700 mb-1">Validation Result:</p>
-                      <p className="text-sm text-gray-600">{extractionResult.validationResults}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700 mb-1">Extraction ID:</p>
-                      <p className="text-xs text-gray-600 font-mono">{extractionResult._id.toString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700 mb-1">Composite Key:</p>
-                      <p className="text-xs text-gray-600 font-mono bg-white px-2 py-1 rounded">
-                        {generateCompositeKey(formData.schoolName, formData.classId, formData.subjectName, inferChapterNumber(extractionResult.fileName))}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-8">
+                  No content uploaded yet for this class
+                </p>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="library" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileQuestion className="h-5 w-5" />
-                Content Library
-              </CardTitle>
-              <CardDescription>
-                View and manage extracted content for your classes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!classExtractions || classExtractions.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No content uploaded yet</p>
-                  <p className="text-sm text-gray-500 mt-1">Upload your first textbook to get started</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {classExtractions.map((extraction) => (
-                    <Card key={extraction._id.toString()} className="border">
-                      <CardContent className="pt-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <FileText className="h-4 w-4 text-gray-500" />
-                              <h3 className="font-semibold">{extraction.fileName}</h3>
-                              <Badge variant="outline" className="text-xs">
-                                {getDocumentTypeLabel(extraction.documentType)}
-                              </Badge>
-                              {extraction._percentage_textbook >= 60 ? (
-                                <Badge variant="default" className="bg-green-600">
-                                  <CheckCircle className="h-3 w-3 mr-1" />
-                                  Compliant
-                                </Badge>
-                              ) : (
-                                <Badge variant="destructive">
-                                  <AlertTriangle className="h-3 w-3 mr-1" />
-                                  Flagged
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <p className="text-gray-600">Subject ID</p>
-                                <p className="font-medium">{extraction.subjectId.toString()}</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">Textbook %</p>
-                                <p className="font-medium">{extraction._percentage_textbook}%</p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">Questions</p>
-                                <p className="font-medium">
-                                  {JSON.parse(extraction._extracted_Questions).length}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">Status</p>
-                                <p className="font-medium">{extraction.relevance}</p>
-                              </div>
-                            </div>
-                            <div className="mt-2 space-y-1">
-                              <p className="text-xs text-gray-500">Extraction ID: {extraction._id.toString()}</p>
-                              <p className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded inline-block">
-                                Composite Key: {extraction.content.match(/Composite Key: ([^\n]+)/)?.[1] || 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <TabsContent value="students" className="space-y-4">
+          <StudentRegistrationForm />
         </TabsContent>
       </Tabs>
     </div>

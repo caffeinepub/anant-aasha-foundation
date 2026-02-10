@@ -1,40 +1,89 @@
 {
   "kind": "build_request",
-  "title": "Task 1: Add backend data structure to index schools by exact school name",
+  "title": "Refactor Motoko resolve-or-create school helper (internal only) and clean up backend call sites",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "In backend/main.mo, add a school storage data structure that supports exact string match lookup by school name: maintain a map keyed by school name (Text) whose value is a School record containing at minimum the School_ID (Nat). This structure must be independent of UI and must not rely on partial/normalized matching (only exact Text equality).",
+      "id": "REQ-8",
+      "text": "Refactor the internal Motoko implementation of the existing private school helper(s) so the resolve-or-create-by-exact-school-name behavior remains identical, but the code is simplified and deduplicated (including factoring repeated checks, reducing nested switches, and improving readability).",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "Implementing Task 1 now: create the data structure for storing schools."
+          "to modify only the internal Motoko implementation of the resolve-or-create helper, without changing its external behavior",
+          "Build and implement"
         ]
       },
       "acceptanceCriteria": [
-        "A Map (or equivalent) exists in backend/main.mo keyed by school name (Text) to a School record containing at least a schoolId (Nat).",
-        "Lookup behavior is based on exact Text equality only (no trimming, case folding, fuzzy matching, or partial matches).",
-        "The code compiles and existing school- and class-related functionality continues to compile without requiring any frontend changes."
+        "No public/shared method signatures change as part of this refactor.",
+        "The helper still performs exact Text equality lookup against the existing exactSchoolNameRegistry and creates a new School record when missing.",
+        "Authorization semantics remain unchanged (only teachers/admins can resolve/create schools).",
+        "Project builds successfully after refactor (Motoko compilation succeeds)."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Refactor manager-assignment logic used by school auto-creation to improve code quality without changing behavior, ensuring the same persisted effects on userProfiles and the same trapping behavior for invalid school IDs.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "I need code quality improvement"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a school is auto-created through the helper, the caller is still assigned as that school's manager exactly as before.",
+        "If manager assignment is attempted for a non-existent school ID, the behavior remains a trap (no silent failures).",
+        "No user-facing text changes are introduced as part of this refactor."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Clean up backend entry points that accept a school name (Text) to call the shared resolve-or-create helper consistently, removing duplicate resolve/create/authorization logic at call sites while keeping outcomes identical.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "changes apply inside the helper, and also refactor how other backend entry points call it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All backend flows that accept a school name (Text) delegate school ID resolution/creation to the single shared helper (no duplicated resolution logic remains at call sites).",
+        "No call-site refactor changes the externally observed behavior (returned values and trap conditions remain the same for equivalent inputs).",
+        "Project builds successfully after call-site refactors (Motoko compilation succeeds)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
-    "Use English for any user-facing text (e.g., Runtime.trap error strings).",
-    "Do not modify any frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui."
+    "Backend must remain a single Motoko actor; do not introduce additional canisters/services.",
+    "Do not change external behavior of the resolve-or-create school helper or the backend entry points that depend on it (refactor/code-quality only).",
+    "Do not introduce fuzzy/normalized/partial matching; exact Text equality semantics must remain unchanged.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not implement the teacher student-registration workflow yet (school creation, grade selection, class creation/linking).",
-    "Do not implement manager auto-assignment or permissions changes in this task.",
-    "Do not add or change frontend screens/forms in this task.",
-    "Do not migrate or delete existing schoolRegistry/classRegistry storage in this task (only add the new name-indexed structure)."
+    "Frontend/UI changes (this task is backend-only refactoring).",
+    "Adding new product features (e.g., new school/class workflows beyond existing behavior).",
+    "Changing data schemas or requiring state migration unless strictly necessary for the refactor."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

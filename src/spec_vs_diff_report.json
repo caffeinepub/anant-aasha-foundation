@@ -1,0 +1,54 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-10T17:33:56.679Z",
+  "summary": "Diff adds a new map `exactSchoolNameRegistry` in `backend/main.mo`, but the provided snippet does not show a `School` record type containing `schoolId : Nat` nor any exact-name lookup/update usage. The diff also modifies a frontend file that the BuildRequest explicitly marked as immutable, and adds an unrelated `project_state.json` file.",
+  "missing_requirements": [
+    {
+      "id": "REQ-1",
+      "requirement": "Map keyed by school name (Text) whose value is a School record containing at least a schoolId (Nat).",
+      "reason": "Although `exactSchoolNameRegistry` is introduced as `Map<Text, School>`, the diff snippet does not show the definition of `type School` nor evidence that it contains `schoolId : Nat` (the only visible related type is `SchoolInfo`).",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-1",
+      "requirement": "Lookup behavior is based on exact Text equality only (no trimming, case folding, fuzzy matching, or partial matches).",
+      "reason": "The diff snippet shows the map declaration but no functions or call sites performing lookup; therefore there is no evidence that lookups are implemented and rely strictly on exact `Text` equality.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-1",
+      "requirement": "Code compiles and existing school- and class-related functionality continues to compile without requiring any frontend changes.",
+      "reason": "A frontend file that is explicitly forbidden to change was modified, which conflicts with the 'no frontend changes' constraint and could break the acceptance criterion.",
+      "evidence": [
+        "frontend/src/hooks/useInternetIdentity.ts"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Modified `frontend/src/hooks/useInternetIdentity.ts` despite the constraint to not modify this immutable frontend path.",
+      "reason": "BuildRequest explicitly forbids changes to `frontend/src/hooks/useInternetIdentity.ts` (and related immutable paths), but the diff shows it was modified.",
+      "evidence": [
+        "frontend/src/hooks/useInternetIdentity.ts"
+      ]
+    },
+    {
+      "description": "Added `project_state.json` containing unrelated roadmap/feature-request metadata (AR-1..AR-6).",
+      "reason": "BuildRequest does not request adding project state/roadmap files; it only asks for a backend data structure addition in `backend/main.mo`.",
+      "evidence": [
+        "project_state.json"
+      ]
+    }
+  ],
+  "confidence": 0.68,
+  "changed_files": [
+    "backend/main.mo",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "project_state.json"
+  ]
+}

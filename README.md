@@ -1,2 +1,3 @@
-# anant-aasha-foundation
-Exported from Caffeine project: Task 1: Add backend data structure to index schools by exact school name
+## 
+
+To run app build and run docker image: `docker build -t app . docker run -it --network host app`

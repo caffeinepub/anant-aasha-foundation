@@ -1,0 +1,40 @@
+{
+  "kind": "build_request",
+  "title": "Task 1: Add backend data structure to index schools by exact school name",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "In backend/main.mo, add a school storage data structure that supports exact string match lookup by school name: maintain a map keyed by school name (Text) whose value is a School record containing at minimum the School_ID (Nat). This structure must be independent of UI and must not rely on partial/normalized matching (only exact Text equality).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Implementing Task 1 now: create the data structure for storing schools."
+        ]
+      },
+      "acceptanceCriteria": [
+        "A Map (or equivalent) exists in backend/main.mo keyed by school name (Text) to a School record containing at least a schoolId (Nat).",
+        "Lookup behavior is based on exact Text equality only (no trimming, case folding, fuzzy matching, or partial matches).",
+        "The code compiles and existing school- and class-related functionality continues to compile without requiring any frontend changes."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
+    "Use English for any user-facing text (e.g., Runtime.trap error strings).",
+    "Do not modify any frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui."
+  ],
+  "nonGoals": [
+    "Do not implement the teacher student-registration workflow yet (school creation, grade selection, class creation/linking).",
+    "Do not implement manager auto-assignment or permissions changes in this task.",
+    "Do not add or change frontend screens/forms in this task.",
+    "Do not migrate or delete existing schoolRegistry/classRegistry storage in this task (only add the new name-indexed structure)."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

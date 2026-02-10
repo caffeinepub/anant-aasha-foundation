@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Building an NGO-focused LMS platform with multi-tenant school/class isolation, role-based dashboards (admin/teacher/student), teacher-led school + student registration with auto-resolve School/Class logic, and strict textbook-PDF ingestion rules that separate explanatory content from exercises for downstream learning vs assessment use.",
+  "architectural_notes": [
+    "Use exact string matching for school resolution (no fuzzy/normalization unless added later).",
+    "Grades supported: UKG through 12th; no class sections (A/B/C) used.",
+    "Data isolation requirement: logical per-school separation inside the same Internet Computer canister (e.g., nested maps keyed by School_ID).",
+    "Teacher who creates a school is auto-assigned as manager for that school and its classes.",
+    "Recommended uniqueness constraints to prevent duplicates: Schools unique by (school_name, board, location); Classes unique by (school_id, class_level[, section if ever added])."
+  ],
+  "known_issues": [
+    "Build/app-builder repeatedly fails with generic 'AI unable to complete your request / struggled' errors when prompts bundle too many features; requires breaking work into smaller builder-safe tasks."
+  ],
+  "isFixRequest": true,
+  "existing_features": [],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Teacher PDF chapter upload: require School ID, Class ID, Subject, Chapter metadata before processing; OCR extraction; split into two permanent stores (Textbook Content vs Exercises/Questions) with human review on ambiguous classification; enforce usage constraints (learning only from Textbook Content, quizzes/game challenges only from Exercises).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Automatic student content assignment: auto-assign existing learning content only when BOTH School ID and Class ID match exactly; never infer/partial match; require human/admin action when no exact match exists.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "LMS module with core functions and updated dashboards/panels for all roles (admin/teacher/student) per specifications (frontend-first approach mentioned).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Role-based permissions (RBAC): teachers can create/edit school IDs, register students, upload chapters, review/modify content; teacher approval for children photo submissions; reward verification with authority to adjust rewards ±10% based on offline/social performance; admins can create/edit/delete with full permissions.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Student registration auto-resolve workflow: exact string match school identification (by provided tag fields like name/location/board); create school if not found; resolve/create class by school_id + grade (UKG–12, no sections); if class exists auto-link class content, else create class with content_status='pending' and notify teacher to upload PDF; auto-assign creating teacher as school manager; logical per-school separation within same IC canister.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "In backend/main.mo, add a school storage data structure that supports exact string match lookup by school name: maintain a map keyed by school name (Text) whose value is a School record containing at minimum the School_ID (Nat). This structure must be independent of UI and must not rely on partial/normalized matching (only exact Text equality).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Task 1: Add backend data structure to index schools by exact school name",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

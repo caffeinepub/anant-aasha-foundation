@@ -1,0 +1,46 @@
+{
+  "kind": "build_request",
+  "title": "Add disclaimer overlay caption to all images across the app",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-12",
+      "text": "Add a semi-transparent disclaimer overlay caption directly on every image rendered across the entire frontend application. The caption text must read exactly: 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.' The overlay should appear as a dark semi-transparent banner anchored to the bottom of each image, with white text legible against varying image backgrounds. This must apply to all images in all pages including HomePage, SafeLearningPage, EcoSevaPage, EmpowermentPage, AboutPage, and any other page that renders images.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.",
+          "caption directly on each image",
+          "all image"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Every image rendered in the app displays a semi-transparent dark banner at the bottom of the image.",
+        "The banner contains the text: 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.'",
+        "The text is white and legible on top of the semi-transparent overlay.",
+        "The overlay is visually contained within the image boundaries (does not overflow outside the image frame).",
+        "The overlay appears on images across all pages: HomePage, SafeLearningPage, EcoSevaPage, EmpowermentPage, AboutPage, and any other page containing images.",
+        "A reusable wrapper component (e.g., ImageWithDisclaimer) is created and used consistently wherever images appear, so the overlay is applied uniformly.",
+        "No images in the app are missing the disclaimer overlay."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify any files listed in frontend.immutablePaths.",
+    "The disclaimer overlay must not obscure primary subject matter of images in a way that renders content unreadable.",
+    "The disclaimer text must match exactly: 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.'"
+  ],
+  "nonGoals": [
+    "Adding the disclaimer as a page-level text block outside of images.",
+    "Modifying backend logic.",
+    "Changing image assets or generating new images.",
+    "Adding the disclaimer to icons, logos, or UI decorative SVGs."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

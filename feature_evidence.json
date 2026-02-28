@@ -1,0 +1,37 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-a-semi-transparent-disclaimer-overlay-caption-directly-on-every-image-rendered-across-the-entire-frontend-application-the-caption-text-must-read-exactly-not-reality-but-a-vision-of-tomorrow-because-every-child-deserves-dignity-not-a-tree-for-shade-or-a-hut-for-shelter-the-overlay-should-appear-as-a-dark-semi-transparent-banner-anchored-to-the-bottom-of-each-image-with-white-text-legible-against-varying-image-backgrounds-this-must-apply-to-all-images-in-all-pages-including-homepage-safelearningpage-ecosevapage-empowermentpage-aboutpage-and-any-other-page-that-renders-images",
+      "featureTitle": "Add a semi-transparent disclaimer overlay caption directly on every image rendered across the entire frontend application. The caption text must read exactly: 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.' The overlay should appear as a dark semi-transparent banner anchored to the bottom of each image, with white text legible against varying image backgrounds. This must apply to all images in all pages including HomePage, SafeLearningPage, EcoSevaPage, EmpowermentPage, AboutPage, and any other page that renders images.",
+      "files": [
+        "frontend/src/components/ImageWithDisclaimer.tsx",
+        "frontend/src/pages/AashaCoinsPage.tsx",
+        "frontend/src/pages/AboutPage.tsx",
+        "frontend/src/pages/DonateGoodsPage.tsx",
+        "frontend/src/pages/DonateMoneyPage.tsx",
+        "frontend/src/pages/EcoSevaPage.tsx",
+        "frontend/src/pages/EmpowermentPage.tsx",
+        "frontend/src/pages/GuardianGamePage.tsx",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/src/pages/LearningDashboard.tsx",
+        "frontend/src/pages/SafeLearningPage.tsx",
+        "frontend/src/pages/VisualNotebookPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "http-outcalls@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-12"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

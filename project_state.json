@@ -1,0 +1,175 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 13,
+  "summary": "Building an NGO-focused LMS platform with multi-tenant school/class isolation, role-based dashboards (admin/teacher/student), teacher-led school + student registration with auto-resolve School/Class logic, and strict textbook-PDF ingestion rules that separate explanatory content from exercises for downstream learning vs assessment use. School-name resolution uses exact string match first; if no exact match exists, the backend auto-creates a new School record, returns the new School_ID, and auto-assigns the creating teacher as the school manager (applies to all backend flows that accept a school name).",
+  "architectural_notes": [
+    "Use exact string matching for school resolution (no fuzzy/normalization unless added later).",
+    "Grades supported: UKG through 12th; no class sections (A/B/C) used.",
+    "Data isolation requirement: logical per-school separation inside the same Internet Computer canister (e.g., nested maps keyed by School_ID).",
+    "Teacher who creates a school is auto-assigned as manager for that school and its classes.",
+    "Recommended uniqueness constraints to prevent duplicates: Schools unique by (school_name, board, location); Classes unique by (school_id, class_level[, section if ever added]).",
+    "Teacher-led student registration must resolve schools using exact Text equality on school name (no fuzzy/normalized matching); if no exact match exists, do not infer—require explicit school creation/selection.",
+    "School-name resolution policy updated: across all backend flows that accept a school name, use exact Text equality lookup; if no exact match exists, auto-create the school and return its new School_ID; auto-assign the creating teacher as the school manager (still no fuzzy/normalized/partial matching).",
+    "Resolve-or-create school helper: refactor for code quality only (no external behavior changes) and standardize all backend entry points to use the shared helper consistently.",
+    "Data model: Schools contain a nested Classes map (keyed by class name Text) and each Class contains a nested Students map (keyed by Student_ID); top-level global class and student registries are fully replaced by this nested structure."
+  ],
+  "known_issues": [
+    "Build/app-builder repeatedly fails with generic 'AI unable to complete your request / struggled' errors when prompts bundle too many features; requires breaking work into smaller builder-safe tasks."
+  ],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-update-the-student-registration-ui-flow-to-align-with-backend-auto-create-behavior-remove-adjust-the-current-frontend-error-messaging-that-instructs-users-to-create-the-school-first-when-no-exact-match-exists-and-ensure-the-registration-flow-can-proceed-when-the-school-name-is-new-while-still-using-exact-matching-semantics-for-determining-whether-it-is-an-existing-school-vs-a-new-school",
+      "title": "Update the student registration UI flow to align with backend auto-create behavior: remove/adjust the current frontend error messaging that instructs users to “create the school first” when no exact match exists, and ensure the registration flow can proceed when the school name is new (while still using exact matching semantics for determining whether it is an existing school vs a new school).",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-legal-info-section-of-the-frontend-to-display-the-full-80g-provisional-approval-details-from-form-no-10ac-in-a-neatly-aligned-structured-layout-the-section-must-include-pan-abaca6413d-organization-name-annanth-aasha-foundation-nature-of-activities-charitable-full-address-flat-door-building-plot-144-haibatpur-road-i-a-surajpur-s-o-bisrakh-jalalpur-gautam-buddha-nagar-uttar-pradesh-india-201306-document-identification-number-abaca6413df2026101-application-number-240576860150126-unique-registration-number-abaca6413df20261-section-sub-section-80g-sub-clause-a-of-clause-iv-of-first-proviso-to-sub-section-5-of-section-80g-date-of-provisional-approval-22-01-2026-assessment-years-ay-2026-27-to-ay-2028-2029-the-full-approval-order-text-with-conditions-a-b-and-c-exactly-as-provided-and-ngo-darpan-id-up-2024-0416559-all-fields-must-be-presented-as-labeled-key-value-pairs-or-structured-rows-with-consistent-alignment-grouping-related-fields-e-g-address-fields-together-order-conditions-as-numbered-sub-items",
+      "title": "Update the Legal Info section of the frontend to display the full 80G provisional approval details from Form No. 10AC in a neatly aligned, structured layout. The section must include: PAN (ABACA6413D), Organization Name (ANNANTH AASHA FOUNDATION), Nature of Activities (Charitable), Full Address (Flat/Door/Building Plot 144, Haibatpur Road, I.A. Surajpur S.O, Bisrakh Jalalpur, Gautam Buddha Nagar, Uttar Pradesh, INDIA – 201306), Document Identification Number (ABACA6413DF2026101), Application Number (240576860150126), Unique Registration Number (ABACA6413DF20261), Section/sub-section (80G – Sub-clause (A) of clause (iv) of first proviso to sub-section (5) of section 80G), Date of Provisional Approval (22-01-2026), Assessment Years (AY 2026-27 to AY 2028-2029), the full approval order text with conditions a, b, and c exactly as provided, and NGO Darpan ID (UP/2024/0416559). All fields must be presented as labeled key-value pairs or structured rows with consistent alignment, grouping related fields (e.g., address fields together, order conditions as numbered sub-items).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-semi-transparent-disclaimer-overlay-caption-directly-on-every-image-rendered-across-the-entire-frontend-application-the-caption-text-must-read-exactly-not-reality-but-a-vision-of-tomorrow-because-every-child-deserves-dignity-not-a-tree-for-shade-or-a-hut-for-shelter-the-overlay-should-appear-as-a-dark-semi-transparent-banner-anchored-to-the-bottom-of-each-image-with-white-text-legible-against-varying-image-backgrounds-this-must-apply-to-all-images-in-all-pages-including-homepage-safelearningpage-ecosevapage-empowermentpage-aboutpage-and-any-other-page-that-renders-images",
+      "title": "Add a semi-transparent disclaimer overlay caption directly on every image rendered across the entire frontend application. The caption text must read exactly: 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.' The overlay should appear as a dark semi-transparent banner anchored to the bottom of each image, with white text legible against varying image backgrounds. This must apply to all images in all pages including HomePage, SafeLearningPage, EcoSevaPage, EmpowermentPage, AboutPage, and any other page that renders images.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Teacher PDF chapter upload: require School ID, Class ID, Subject, Chapter metadata before processing; OCR extraction; split into two permanent stores (Textbook Content vs Exercises/Questions) with human review on ambiguous classification; enforce usage constraints (learning only from Textbook Content, quizzes/game challenges only from Exercises).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Automatic student content assignment: auto-assign existing learning content only when BOTH School ID and Class ID match exactly; never infer/partial match; require human/admin action when no exact match exists.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "LMS module with core functions and updated dashboards/panels for all roles (admin/teacher/student) per specifications (frontend-first approach mentioned).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Role-based permissions (RBAC): teachers can create/edit school IDs, register students, upload chapters, review/modify content; teacher approval for children photo submissions; reward verification with authority to adjust rewards ±10% based on offline/social performance; admins can create/edit/delete with full permissions.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Student registration auto-resolve workflow: exact string match school identification (by provided tag fields like name/location/board); create school if not found; resolve/create class by school_id + grade (UKG–12, no sections); if class exists auto-link class content, else create class with content_status='pending' and notify teacher to upload PDF; auto-assign creating teacher as school manager; logical per-school separation within same IC canister.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "In backend/main.mo, add a school storage data structure that supports exact string match lookup by school name: maintain a map keyed by school name (Text) whose value is a School record containing at minimum the School_ID (Nat). This structure must be independent of UI and must not rely on partial/normalized matching (only exact Text equality).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Ensure the backend maintains and uses a dedicated exact school-name lookup map keyed by the school name (Text) with values containing at minimum the resolved School_ID (Nat), and keep this index consistent whenever schools are created/updated through existing backend school management functions.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Refine school-name validation across all backend flows: resolve School_ID by exact school-name match; if no exact match exists, automatically create a new School with a new School_ID, return it, and auto-assign the creating teacher as school manager (no fuzzy/normalized/partial matching).",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Implement exact school-name resolution as a shared backend helper: when a backend flow receives a school name (Text), it must (1) look up the School_ID using exact Text equality (no normalization/partial/fuzzy match), (2) if found, return the existing School_ID, (3) if not found, automatically create a new School with a new School_ID, register it in the school registries (including the exactSchoolNameRegistry index), and return the new School_ID.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Apply the exact school-name resolve-or-create behavior to all existing backend entry points (public/shared functions) that accept a school name (Text) as input, so they no longer fail solely due to a missing exact-name match and instead proceed using the resolved/created School_ID.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "When a new School is auto-created via school-name resolve-or-create, automatically assign the creating teacher as that school’s manager according to the project’s existing authorization/role model (and ensure the manager assignment is persisted and enforced consistently).",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Code-quality refactor: improve internal Motoko implementation of the existing resolve-or-create school helper (simplification/deduping/error-handling/role-assignment flow) without changing external behavior, and refactor backend entry points to call the helper consistently (call-site cleanup only, no behavioral changes).",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Refactor the internal Motoko implementation of the existing private school helper(s) so the resolve-or-create-by-exact-school-name behavior remains identical, but the code is simplified and deduplicated (including factoring repeated checks, reducing nested switches, and improving readability).",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Refactor manager-assignment logic used by school auto-creation to improve code quality without changing behavior, ensuring the same persisted effects on userProfiles and the same trapping behavior for invalid school IDs.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Clean up backend entry points that accept a school name (Text) to call the shared resolve-or-create helper consistently, removing duplicate resolve/create/authorization logic at call sites while keeping outcomes identical.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Restructure backend data model: nested School → Classes map (keyed by class name string) → Students map (keyed by Student_ID); fully replace existing top-level class registry and student registry; no grade divisions or sections; same class name can exist independently across different schools.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Update Legal Info section to display 80G provisional approval details from Form No. 10AC: PAN, organization name (ANNANTH AASHA FOUNDATION), nature of activities, full address, Document Identification Number, Application Number, Unique Registration Number, section/sub-section details, date of provisional approval (22-01-2026), assessment years (AY 2026-27 to AY 2028-2029), full approval order text (conditions a/b/c), and NGO Darpan ID (UP/2024/0416559), all neatly aligned and formatted.",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Add semi-transparent disclaimer overlay caption on all images across the entire app with text: 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.'",
+      "reqIds": [],
+      "status": "in_progress"
+    }
+  ],
+  "projectName": "Task 1: Add backend data structure to index schools by exact school name",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

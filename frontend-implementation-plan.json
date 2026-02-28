@@ -1,0 +1,117 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Add disclaimer overlay caption to all images across the app",
+  "requirements": [
+    {
+      "id": "REQ-12",
+      "summary": "Add a reusable ImageWithDisclaimer component that wraps all images with a semi-transparent disclaimer overlay reading 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.'",
+      "acceptanceCriteria": [
+        "Every image rendered in the app displays a semi-transparent dark banner at the bottom of the image.",
+        "The banner contains the text: 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.'",
+        "The text is white and legible on top of the semi-transparent overlay.",
+        "The overlay is visually contained within the image boundaries (does not overflow outside the image frame).",
+        "The overlay appears on images across all pages: HomePage, SafeLearningPage, EcoSevaPage, EmpowermentPage, AboutPage, and any other page containing images.",
+        "A reusable wrapper component (e.g., ImageWithDisclaimer) is created and used consistently wherever images appear, so the overlay is applied uniformly.",
+        "No images in the app are missing the disclaimer overlay."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ImageWithDisclaimer.tsx",
+          "operation": "create",
+          "description": "Create a reusable ImageWithDisclaimer component that wraps an <img> element with a relative-positioned container and renders a semi-transparent dark overlay banner at the bottom containing the exact disclaimer text: 'Not reality, but a vision of tomorrow — because every child deserves dignity, not a tree for shade or a hut for shelter.' The component accepts all standard img props (src, alt, className, etc.) and uses Tailwind utilities for positioning, overlay styling (bg-black/70), white text, and proper containment within the image boundaries."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props (src, alt, className) are passed through to the wrapper component. Review the file to identify all image references including hero banners and program card images."
+        },
+        {
+          "path": "frontend/src/pages/SafeLearningPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify hero imagery and any program overview card images."
+        },
+        {
+          "path": "frontend/src/pages/EcoSevaPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify hero section images and any environmental activity images."
+        },
+        {
+          "path": "frontend/src/pages/EmpowermentPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify hero section images and any pillar images."
+        },
+        {
+          "path": "frontend/src/pages/AboutPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify any organizational or mission images."
+        },
+        {
+          "path": "frontend/src/pages/AashaCoinsPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify reward catalog images and any related imagery."
+        },
+        {
+          "path": "frontend/src/pages/AashaStorePage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify store item images."
+        },
+        {
+          "path": "frontend/src/pages/AuctionPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify auction item images."
+        },
+        {
+          "path": "frontend/src/pages/DonateGoodsPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify item category images and any related imagery."
+        },
+        {
+          "path": "frontend/src/pages/DonateMoneyPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify impact card images."
+        },
+        {
+          "path": "frontend/src/pages/GuardianGamePage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify boss character images, stage backgrounds, and any other game imagery. Exclude small UI icons if they are decorative SVGs or very small assets."
+        },
+        {
+          "path": "frontend/src/pages/ImpactDashboard.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify any chart images, activity images, or school statistic images."
+        },
+        {
+          "path": "frontend/src/pages/LearningDashboard.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify lesson card images and any progress tracking imagery."
+        },
+        {
+          "path": "frontend/src/pages/TeacherDashboard.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify lesson images and any upload-related imagery."
+        },
+        {
+          "path": "frontend/src/pages/TeacherDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify lesson images, extraction previews, and any related imagery."
+        },
+        {
+          "path": "frontend/src/pages/VisualNotebookPage.tsx",
+          "operation": "modify",
+          "description": "Replace all <img> tags with the ImageWithDisclaimer component. Import ImageWithDisclaimer from '../components/ImageWithDisclaimer'. Ensure all existing image props are preserved. Review the file to identify flashcard images, slide deck images, and any learning material imagery."
+        },
+        {
+          "path": "frontend/src/components/Header.tsx",
+          "operation": "modify",
+          "description": "Replace any <img> tags (excluding the NGO logo if it is a small UI element) with the ImageWithDisclaimer component. Import ImageWithDisclaimer from './ImageWithDisclaimer'. Review the file to identify any banner images or user profile images that should receive the disclaimer overlay. Exclude small logos and icons that are purely decorative."
+        },
+        {
+          "path": "frontend/src/components/Footer.tsx",
+          "operation": "modify",
+          "description": "Replace any <img> tags (excluding the NGO logo and small badge icons) with the ImageWithDisclaimer component. Import ImageWithDisclaimer from './ImageWithDisclaimer'. Review the file to identify any footer images that should receive the disclaimer overlay. Exclude small logos, badges, and icons that are purely decorative."
+        }
+      ]
+    }
+  ]
+}
